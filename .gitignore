@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Build directories
+**/build/
+**/Debug/
+**/Release/
+
+# GCC / linker artifacts
+*.o
+*.d
+*.lst
+*.map
+*.elf
+*.bin
+*.hex
+
+# Cache
+.cache/
+.clangd/
+compile_commands.json
+
+# IDE user-specific files
+.idea/
+*.pro.user
+*.pro.user.*
