@@ -93,7 +93,7 @@ BIN = $(CP) -O binary -S
 # CFLAGS
 #######################################
 # cpu
-CPU = -mcpu=cortex-m7
+CPU = -mcpu=cortex-m4
 
 # fpu
 FPU = -mfpu=fpv4-sp-d16
