@@ -54,7 +54,7 @@ C_SOURCES = \
 ../../CM4/Core/Src/syscalls.c
 
 ASM_SOURCES = \
-startup_stm32h747xx_CM4.s
+startup_stm32h757xx_CM4.s
 
 ASMM_SOURCES =
 
@@ -89,7 +89,7 @@ AS_DEFS =
 C_DEFS = \
 -DCORE_CM4 \
 -DUSE_HAL_DRIVER \
--DSTM32H747xx \
+-DSTM32H757xx \
 -DUSE_PWR_LDO_SUPPLY
 
 AS_INCLUDES =

@@ -63,7 +63,7 @@ C_SOURCES =  \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32h747xx_CM4.s
+startup_stm32h757xx_CM4.s
 
 # ASM sources
 ASMM_SOURCES = 
@@ -112,7 +112,7 @@ AS_DEFS =
 C_DEFS =  \
 -DCORE_CM4 \
 -DUSE_HAL_DRIVER \
--DSTM32H747xx
+-DSTM32H757xx
 
 
 # AS includes
