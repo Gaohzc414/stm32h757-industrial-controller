@@ -13,6 +13,7 @@ BSP_OTA_SOURCES := \
   ../../BSP/OTA/bsp_ota_port.c \
   ../../BSP/OTA/bsp_ota_protocol.c \
   ../../BSP/OTA/bsp_ota_transport.c \
+  ../../BSP/OTA/bsp_ota_uart.c \
   ../../Common/Src/bsp_flash_ram.c \
   ../../Common/Src/boot_slot.c \
   ../../Common/Src/boot_meta.c

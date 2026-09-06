@@ -1,6 +1,6 @@
 /**
  * @file    bsp_ota_uart.h
- * @brief   OTA 调试/辅助 UART 读写接口
+ * @brief   OTA USART6 读写接口
  */
 #ifndef BSP_OTA_UART_H
 #define BSP_OTA_UART_H
@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /**
- * @brief  初始化 OTA UART（当前为空实现，依赖 CubeMX 初始化）
+ * @brief  初始化 OTA UART（依赖 CubeMX 初始化）
  */
 void bsp_ota_uart_init(void);
 

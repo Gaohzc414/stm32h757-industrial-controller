@@ -1,6 +1,6 @@
 /**
  * @file    bsp_ota_transport.h
- * @brief   OTA 底层传输抽象（W5500 TCP）
+ * @brief   OTA 底层传输抽象（UART）
  */
 #ifndef BSP_OTA_TRANSPORT_H
 #define BSP_OTA_TRANSPORT_H
@@ -8,25 +8,24 @@
 #include <stdint.h>
 
 /**
- * @brief  初始化 OTA 传输层（信号量由 RTOS 启动后创建）
+ * @brief  初始化 OTA 传输层
  */
 void bsp_ota_transport_init(void);
 
 /**
- * @brief  轮询 TCP 接收，将 +IPD 数据写入环形缓冲
+ * @brief  轮询 UART 接收
  */
 void bsp_ota_transport_poll(void);
 
 /**
- * @brief  阻塞等待 TCP RX 信号量
+ * @brief  阻塞等待 UART RX
  * @param  timeout_ms 超时时间（毫秒）
- * @retval 0 有数据可读
- * @retval -1 超时或无连接
+ * @retval 0 等待结束
  */
 int bsp_ota_transport_wait_rx(uint32_t timeout_ms);
 
 /**
- * @brief  非阻塞读取 1 字节 SOIP 载荷
+ * @brief  非阻塞读取 1 字节
  * @param  byte 输出字节指针
  * @retval 0 成功
  * @retval -1 无数据或参数无效
@@ -34,9 +33,9 @@ int bsp_ota_transport_wait_rx(uint32_t timeout_ms);
 int bsp_ota_transport_try_read(uint8_t *byte);
 
 /**
- * @brief  查询 TCP 连接是否就绪
- * @retval 1 已连接
- * @retval 0 未连接
+ * @brief  查询 UART 通道是否就绪
+ * @retval 1 已就绪
+ * @retval 0 未就绪
  */
 uint8_t bsp_ota_transport_ready(void);
 
@@ -69,9 +68,8 @@ int bsp_ota_transport_write(const uint8_t *data, uint16_t len);
 int bsp_ota_transport_write_once(const uint8_t *data, uint16_t len, uint32_t timeout_ms);
 
 /**
- * @brief  TCP 连续发送失败时重连（保持 OTA 会话）
- * @retval 0 重连成功
- * @retval -1 重连失败
+ * @brief  UART 无连接恢复动作
+ * @retval 0 无需恢复
  */
 int bsp_ota_transport_recover_link(void);
 

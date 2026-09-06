@@ -19,7 +19,6 @@
 #include <string.h>
 
 #include "bsp_log.h"
-#include "bsp_w5500_conf.h"
 #include "bsp_ota_conf.h"
 #include "bsp_ota_coop.h"
 #include "bsp_ota_crc.h"

@@ -154,6 +154,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   printf("\r\n=== APP CM7 started ===\r\n");
   BSP_Ota_Init();
+
+  uint8_t test[]="USART6 OTA TEST\r\n";
+  bsp_ota_uart_write(test,sizeof(test)-1);
+
   BSP_Ota_OnBoot();
   BSP_Watchdog_LogResetCause();
 

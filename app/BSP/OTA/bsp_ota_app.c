@@ -6,7 +6,6 @@
 
 #include "bsp_ota_conf.h"
 #include "bsp_log.h"
-#include "bsp_w5500_tcp.h"
 #include "bsp_ota_manager.h"
 #include "bsp_ota_transport.h"
 #include "bsp_watchdog.h"
@@ -32,7 +31,7 @@ void BSP_Ota_Init(void)
 }
 
 /**
- * @brief  创建 OTA RTOS 任务并初始化 TCP 接收通知
+ * @brief  创建 OTA RTOS 任务并初始化 UART OTA 通道
  */
 void BSP_Ota_Start(void)
 {
@@ -41,8 +40,6 @@ void BSP_Ota_Start(void)
         .stack_size = BSP_OTA_TASK_STACK_WORDS * 4U,
         .priority = osPriorityRealtime,
     };
-
-    bsp_w5500_tcp_rx_notify_init();
 
     if (osThreadNew(OtaTask, NULL, &attr) == NULL) {
         LOG_E(OTA_APP_TAG, "osThreadNew(ota) failed");
@@ -95,7 +92,7 @@ static void OtaTask(void *argument)
 {
     (void)argument;
 
-    LOG_I(OTA_APP_TAG, "task start SOIP/Ethernet (W5500)");
+    LOG_I(OTA_APP_TAG, "task start SOIP/UART (USART6)");
 
     for (;;) {
         if (bsp_ota_transport_ready()) {
