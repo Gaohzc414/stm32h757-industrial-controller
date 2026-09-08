@@ -60,7 +60,7 @@ void mpu_memory_protection(void)
 
     mpu_set_protection(0x38000000U, MPU_REGION_SIZE_64KB, MPU_REGION_NUMBER4, 0,
                        MPU_REGION_FULL_ACCESS, MPU_ACCESS_NOT_SHAREABLE,
-                       MPU_ACCESS_CACHEABLE, MPU_ACCESS_BUFFERABLE);
+                       MPU_ACCESS_NOT_CACHEABLE, MPU_ACCESS_NOT_BUFFERABLE);
 
     mpu_set_protection(0x60000000U, MPU_REGION_SIZE_64MB, MPU_REGION_NUMBER5, 0,
                        MPU_REGION_FULL_ACCESS, MPU_ACCESS_NOT_SHAREABLE,

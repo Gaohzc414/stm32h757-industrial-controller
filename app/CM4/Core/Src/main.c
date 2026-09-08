@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
+#include "cmsis_os2.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,6 +53,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+void MX_FREERTOS_Init(void);
 
 /* USER CODE END PFP */
 
@@ -91,6 +93,10 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
+  /* CM7 has configured the system clock before releasing CM4 from STOP;
+     refresh SystemCoreClock so DWT delays and the FreeRTOS tick are accurate. */
+  SystemCoreClockUpdate();
+
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -101,6 +107,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_DMA_Init();
+  osKernelInitialize();
+  MX_FREERTOS_Init();
+  osKernelStart();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

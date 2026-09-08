@@ -31,6 +31,19 @@ C_SOURCES = \
 ../../CM4/Core/Src/dma.c \
 ../../CM4/Core/Src/stm32h7xx_it.c \
 ../../CM4/Core/Src/stm32h7xx_hal_msp.c \
+../../CM4/Core/Src/freertos.c \
+../../CM4/Core/Src/stm32h7xx_hal_timebase_tim.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/list.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/Common/mpu_wrappers_v2.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
@@ -48,8 +61,10 @@ C_SOURCES = \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
 ../../Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c \
+../../Common/Src/sensor_shared.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
+../../CM4/BSP/Sensor/dht11.c \
 ../../CM4/Core/Src/sysmem.c \
 ../../CM4/Core/Src/syscalls.c
 
@@ -96,10 +111,16 @@ AS_INCLUDES =
 
 C_INCLUDES = \
 -I../../CM4/Core/Inc \
+-I../../CM4/BSP/Sensor \
+-I../../Common/Inc \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
--I../../Drivers/CMSIS/Include
+-I../../Drivers/CMSIS/Include \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/include \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+-I../../Drivers/CMSIS/RTOS2/Include
 
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 

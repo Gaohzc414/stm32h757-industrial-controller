@@ -27,7 +27,6 @@ OPT = -Og
 include lvgl.mk
 include usb_modbus.mk
 include bsp_log.mk
-include bsp_dht11.mk
 include bsp_adc.mk
 include bsp_touch.mk
 include bsp_w5500.mk
@@ -103,13 +102,13 @@ C_SOURCES =  \
 $(LVGL_SOURCES) \
 $(USB_MODBUS_SOURCES) \
 $(BSP_LOG_SOURCES) \
-$(BSP_DHT11_SOURCES) \
 $(BSP_ADC_SOURCES) \
 $(BSP_TOUCH_SOURCES) \
 $(BSP_W5500_SOURCES) \
 ../../CM7/Core/Src/spi.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 $(BSP_OTA_SOURCES) \
+../../Common/Src/sensor_shared.c \
 ../../CM7/Core/Src/adc.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc_ex.c \
@@ -212,11 +211,11 @@ C_INCLUDES =  \
 $(LVGL_INCLUDES) \
 $(USB_MODBUS_INCLUDES) \
 $(BSP_LOG_INCLUDES) \
-$(BSP_DHT11_INCLUDES) \
 $(BSP_ADC_INCLUDES) \
 $(BSP_TOUCH_INCLUDES) \
 $(BSP_W5500_INCLUDES) \
 $(BSP_OTA_INCLUDES) \
+ -I../../Common/Inc \
 -I../../CM7/FATFS/Target \
 -I../../CM7/FATFS/App \
 -I../../Middlewares/Third_Party/FatFs/src \

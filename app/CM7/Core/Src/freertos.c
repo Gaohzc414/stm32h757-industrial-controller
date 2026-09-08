@@ -31,13 +31,13 @@
 #include "lvgl_demo.h"
 #include "bsp_modbus_app.h"
 #include "bsp_usb_modbus.h"
-#include "dht11.h"
 #include "bsp_adc.h"
 #include "bsp_watchdog.h"
 #include "bsp_app_data.h"
 #include "bsp_w5500_app.h"
 #include "bsp_ota_app.h"
 #include "bsp_ota_coop.h"
+#include "sensor_shared.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +57,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+static osThreadId_t sensorIpcTaskHandle;
+static const osThreadAttr_t sensorIpcTask_attributes = {
+  .name = "sensor_ipc",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -69,6 +75,7 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+static void SensorIpcTask(void *argument);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -109,6 +116,8 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  sensorIpcTaskHandle = osThreadNew(SensorIpcTask, NULL, &sensorIpcTask_attributes);
+  sensor_ipc_init(sensorIpcTaskHandle);
 
   /* USER CODE BEGIN RTOS_THREADS */
   BSP_Watchdog_Start();
@@ -137,7 +146,6 @@ void StartDefaultTask(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   BSP_Modbus_Data_Init();
-  dht11_app_start();
   bsp_adc_app_start();
   /* 网络与 OTA：W5500 维护链路，OTA 任务解析 SOIP */
   bsp_w5500_app_start();
@@ -157,6 +165,35 @@ void StartDefaultTask(void *argument)
     osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/**
+ * @brief  CM7 侧共享传感器同步任务：等待 CM4 发布后更新应用数据
+ * @param  argument  未使用
+ */
+static void SensorIpcTask(void *argument)
+{
+  sensor_shared_data_t sample;
+
+  (void)argument;
+
+  if (sensor_ipc_read(&sample) == 0) {
+    if (sample.valid != 0U) {
+      BSP_AppData_SetHumidity((uint16_t)sample.humidity);
+      BSP_AppData_SetTemperature((uint16_t)sample.temperature);
+    }
+  }
+
+  for (;;) {
+    (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+    if (sensor_ipc_read(&sample) == 0) {
+      if (sample.valid != 0U) {
+        BSP_AppData_SetHumidity((uint16_t)sample.humidity);
+        BSP_AppData_SetTemperature((uint16_t)sample.temperature);
+      }
+    }
+  }
 }
 
 /* Private application code --------------------------------------------------*/

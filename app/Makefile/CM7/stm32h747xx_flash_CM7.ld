@@ -46,6 +46,7 @@ MEMORY
 FLASH (rx)      : ORIGIN = 0x08020000, LENGTH = 448K
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 AXI_SRAM (xrw) : ORIGIN = 0x24000000, LENGTH = 512K
+SHARED_RAM (xrw) : ORIGIN = 0x38000000, LENGTH = 64K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
@@ -171,6 +172,14 @@ SECTIONS
     *(.dma_buffer*)
     . = ALIGN(32);
   } >AXI_SRAM
+
+  .shared_data (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.shared_data)
+    *(.shared_data*)
+    . = ALIGN(32);
+  } >SHARED_RAM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :

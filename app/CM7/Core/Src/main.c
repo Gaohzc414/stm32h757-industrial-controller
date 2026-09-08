@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include "bsp_log_conf.h"
 #include "bsp_log.h"
-#include "dht11.h"
 #include "bsp_sys.h"
 #include "mpu.h"
 #include "sdram.h"
@@ -124,6 +123,15 @@ int main(void)
 /* USER CODE BEGIN Boot_Mode_Sequence_2 */
   HAL_RCCEx_EnableBootCore(RCC_BOOT_C2);
   __HAL_RCC_HSEM_CLK_ENABLE();
+
+  /* Wait for CM4 to actually boot and enter STOP mode (D2 domain clock stops,
+     clearing D2CKRDY) before releasing HSEM #0.  When the BCM4 option bit is 0,
+     CM4 is held in reset until EnableBootCore() above, so the HSEM release must
+     not race ahead of CM4 reaching STOP, otherwise the wake is missed and CM4
+     stays parked in STOP forever. */
+  timeout = 0xFFFF;
+  while ((__HAL_RCC_GET_FLAG(RCC_FLAG_D2CKRDY) != RESET) && (timeout-- > 0));
+
   HAL_HSEM_FastTake(HSEM_ID_0);
   HAL_HSEM_Release(HSEM_ID_0, 0);
   timeout = 0xFFFF;
@@ -155,18 +163,12 @@ int main(void)
   printf("\r\n=== APP CM7 started ===\r\n");
   BSP_Ota_Init();
 
-  uint8_t test[]="USART6 OTA TEST\r\n";
-  bsp_ota_uart_write(test,sizeof(test)-1);
-
   BSP_Ota_OnBoot();
   BSP_Watchdog_LogResetCause();
 
   mpu_memory_protection();
   sdram_init();
   LOG_D("MAIN", "sdram_init done");
-
-  dht11_init();
-  LOG_D("MAIN", "dht11_init done");
 
   lcd_init();
   LOG_D("MAIN", "lcd_init done");
