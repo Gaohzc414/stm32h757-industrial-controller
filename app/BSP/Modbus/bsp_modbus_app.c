@@ -122,6 +122,7 @@ static void BSP_Modbus_RefreshSensorHoldings(void)
     s_mb_mapping->tab_registers[MODBUS_REG_HUMIDITY] = BSP_AppData_GetHumidity();
     s_mb_mapping->tab_registers[MODBUS_REG_TEMPERATURE] = BSP_AppData_GetTemperature();
     s_mb_mapping->tab_registers[MODBUS_REG_ADC_MV] = BSP_AppData_GetAdcMv();
+    s_mb_mapping->tab_registers[MODBUS_REG_DHT11_STATUS] = BSP_AppData_GetDht11Online();
 }
 
 /**
@@ -164,6 +165,8 @@ uint16_t BSP_Modbus_GetHoldingRegister(uint16_t index)
         return BSP_AppData_GetTemperature();
     case MODBUS_REG_ADC_MV:
         return BSP_AppData_GetAdcMv();
+    case MODBUS_REG_DHT11_STATUS:
+        return BSP_AppData_GetDht11Online();
     default:
         break;
     }

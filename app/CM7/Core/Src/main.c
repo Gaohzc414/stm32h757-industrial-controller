@@ -176,6 +176,19 @@ int main(void)
   /* Start IWDG after slow peripheral init to avoid boot-time timeout */
   MX_IWDG1_Init();
 
+  /* === IWDG 排障自检：单独停止喂狗 10s，观察是否 ~8s 复位 ===
+   * 置 1 编译烧录后：
+   *   - 若 IWDG 正常：设备会在 ~8s 处自动复位，重复打印启动日志（证明 IWDG 在计数/复位）。
+   *   - 若打印 "SURVIVED"：说明 IWDG 未真正计数/复位，结合上面的 DIAG 定位 LSI/时钟问题。
+   * 排障结束后把 IWDG_SELFTEST 改回 0。 */
+#define IWDG_SELFTEST 0
+#if IWDG_SELFTEST
+  LOG_W("IWDG-SELFTEST", "NOT feeding IWDG for 10s; expect reset at ~8s ...");
+  HAL_Delay(10000);
+  LOG_E("IWDG-SELFTEST", "SURVIVED 10s without feed -> IWDG is NOT counting!");
+  for (;;) { }
+#endif
+
   LOG_I("MAIN", "boot complete, entering scheduler");
 
   /* USER CODE END 2 */

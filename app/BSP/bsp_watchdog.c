@@ -30,7 +30,7 @@ static const uint32_t s_slot_timeout_ms[BSP_WDG_TASK_COUNT] = {
     [BSP_WDG_DEFAULT] = 8000U,
     [BSP_WDG_MODBUS]  = 10000U,
     [BSP_WDG_ADC]     = 5000U,
-    [BSP_WDG_DHT11]   = 8000U,
+    [BSP_WDG_CM4]     = 10000U,
     [BSP_WDG_W5500] = 60000U,
 };
 
@@ -39,13 +39,14 @@ static const char *const s_slot_names[BSP_WDG_TASK_COUNT] = {
     "default",
     "modbus",
     "adc",
-    "dht11",
+    "cm4",
     "w5500",
 };
 
 static uint32_t s_grace_end_ms;
 static uint32_t s_feed_count;
-static volatile uint8_t s_long_op_active;
+/** 长操作引用计数：OTA / W5500 / ESP8266 各自 enter(+1)/exit(-1)，互不覆盖 */
+static volatile uint32_t s_long_op_active;
 
 /**
  * @brief  看门狗喂狗任务入口
@@ -103,7 +104,16 @@ void BSP_Watchdog_LogResetCause(void)
  */
 void BSP_Watchdog_SetLongOp(uint8_t active)
 {
-    s_long_op_active = (active != 0U) ? 1U : 0U;
+    uint32_t primask = __get_PRIMASK();
+
+    /* 多任务并发 enter/exit，需临界区保护引用计数的读-改-写 */
+    __disable_irq();
+    if (active != 0U) {
+        s_long_op_active++;
+    } else if (s_long_op_active > 0U) {
+        s_long_op_active--;
+    }
+    __set_PRIMASK(primask);
 }
 
 /**

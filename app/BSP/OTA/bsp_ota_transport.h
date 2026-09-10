@@ -13,6 +13,14 @@
 void bsp_ota_transport_init(void);
 
 /**
+ * @brief  启动接收：绑定通知任务并武装 DMA RX
+ * @param  notify_task 被 RX 中断唤醒的任务句柄（osThreadId_t）
+ * @retval 0 成功
+ * @retval -1 失败
+ */
+int bsp_ota_transport_start(void *notify_task);
+
+/**
  * @brief  轮询 UART 接收
  */
 void bsp_ota_transport_poll(void);

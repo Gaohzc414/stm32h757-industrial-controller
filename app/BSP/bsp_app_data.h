@@ -52,4 +52,17 @@ void BSP_AppData_SetTemperature(uint16_t value);
  */
 void BSP_AppData_SetAdcMv(uint16_t value);
 
+/**
+ * @brief  读取 DHT11 在线状态
+ * @retval 1 在线（读数有效），0 离线（读数失败）
+ */
+uint8_t BSP_AppData_GetDht11Online(void);
+
+/**
+ * @brief  更新 DHT11 在线状态
+ * @param  online  非 0 在线，0 离线
+ * @retval 无
+ */
+void BSP_AppData_SetDht11Online(uint8_t online);
+
 #endif

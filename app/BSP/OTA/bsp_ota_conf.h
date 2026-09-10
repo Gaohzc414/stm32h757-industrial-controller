@@ -1,3 +1,11 @@
+/*
+ * @Author: gaohuangzichen 18049378029@163.com
+ * @Date: 2026-07-17 15:13:58
+ * @LastEditors: gaohuangzichen 18049378029@163.com
+ * @LastEditTime: 2026-09-10 10:35:14
+ * @FilePath: /stm32h757-industrial-controller/app/BSP/OTA/bsp_ota_conf.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 /**
  * @file    bsp_ota_conf.h
  * @brief   OTA 模块编译期配置宏
@@ -12,9 +20,9 @@
 
 /** @defgroup OTA_PROTO 协议与设备标识 */
 /** SOIP 协议版本字符串，GET_INFO 应答中上报给上位机 */
-#define BSP_OTA_PROTO_VERSION       "SOIP v2.0"
+#define BSP_OTA_PROTO_VERSION       "SOIP v2.1"
 /** 设备名称，GET_INFO 应答中上报 */
-#define BSP_OTA_DEVICE_NAME         "STM32H747-CM7"
+#define BSP_OTA_DEVICE_NAME         "STM32H757-CM7-v2"
 /** @} */
 
 /** @defgroup OTA_BUFFER 通信缓冲与分片参数 */

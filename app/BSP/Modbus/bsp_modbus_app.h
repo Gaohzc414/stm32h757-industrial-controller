@@ -18,6 +18,7 @@
 #define MODBUS_REG_HUMIDITY     0U
 #define MODBUS_REG_TEMPERATURE  1U
 #define MODBUS_REG_ADC_MV       2U   /* ADC voltage, unit: mV, Vref=3300 */
+#define MODBUS_REG_DHT11_STATUS 3U   /* DHT11 在线状态: 1=online, 0=offline */
 
 /**
  * @brief  初始化 Modbus 数据映射与线圈持久化后台任务（不依赖 USB）

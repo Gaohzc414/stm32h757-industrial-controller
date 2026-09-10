@@ -217,7 +217,7 @@ void MX_USART6_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart6) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart6) != HAL_OK)
   {
     Error_Handler();
   }

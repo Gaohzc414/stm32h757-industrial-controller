@@ -16,8 +16,8 @@
 /** 空闲时 wait_rx 超时，用于喂狗；有数据时由信号量立即唤醒 */
 #define OTA_IDLE_WAIT_RX_MS         100U
 #define OTA_ACTIVE_WAIT_RX_MS       20U
-/** DATA 停等阶段：每轮少量 poll 即可（一包一 ACK，无需狂转） */
-#define OTA_RECEIVING_SPIN          8U
+/** DATA 停等阶段：新数据由 DMA 中断立即唤醒，此超时仅作喂狗心跳 */
+#define OTA_RECEIVING_WAIT_RX_MS    5U
 
 static void OtaTask(void *argument);
 
@@ -41,8 +41,16 @@ void BSP_Ota_Start(void)
         .priority = osPriorityRealtime,
     };
 
-    if (osThreadNew(OtaTask, NULL, &attr) == NULL) {
+    osThreadId_t handle = osThreadNew(OtaTask, NULL, &attr);
+
+    if (handle == NULL) {
         LOG_E(OTA_APP_TAG, "osThreadNew(ota) failed");
+        return;
+    }
+
+    /* 绑定 OTA 任务为 RX 通知目标，并武装 USART6 DMA 接收 */
+    if (bsp_ota_transport_start(handle) != 0) {
+        LOG_E(OTA_APP_TAG, "transport start failed");
     }
 }
 
@@ -96,26 +104,20 @@ static void OtaTask(void *argument)
 
     for (;;) {
         if (bsp_ota_transport_ready()) {
-            if (bsp_ota_manager_is_receiving() != 0U) {
-                /* DATA 阶段：密集 poll，尽快把 +IPD 搬进 SOIP 解析器，防止 pending 缓冲溢出 */
-                uint32_t spin;
+            /* 先把环形缓冲里的字节全部搬进 SOIP 解析器（DMA 在中断里持续填充，任务睡眠也不丢字节） */
+            bsp_ota_manager_poll();
 
-                for (spin = 0U; spin < OTA_RECEIVING_SPIN; spin++) {
-                    bsp_ota_manager_poll();
-                }
-                osDelay(1);
+            if (bsp_ota_manager_is_receiving() != 0U) {
+                /* DATA 停等阶段：新数据由 DMA 中断立即唤醒，短超时仅作喂狗心跳 */
+                (void)bsp_ota_transport_wait_rx(OTA_RECEIVING_WAIT_RX_MS);
+            } else if (bsp_ota_manager_is_active() != 0U) {
+                /* 会话活动中缩短等待，提高 ERASE/VERIFY 等命令响应速度 */
+                (void)bsp_ota_transport_wait_rx(OTA_ACTIVE_WAIT_RX_MS);
             } else {
-                /* 非 DATA 阶段：单次 poll 后阻塞等 RX 信号量，降低 CPU 占用 */
-                bsp_ota_manager_poll();
-                if (bsp_ota_manager_is_active() != 0U) {
-                    /* 会话活动中缩短 wait 超时，提高 ERASE/VERIFY 等命令响应速度 */
-                    (void)bsp_ota_transport_wait_rx(OTA_ACTIVE_WAIT_RX_MS);
-                } else {
-                    (void)bsp_ota_transport_wait_rx(OTA_IDLE_WAIT_RX_MS);
-                }
+                (void)bsp_ota_transport_wait_rx(OTA_IDLE_WAIT_RX_MS);
             }
         } else {
-            /* 以太网/TCP 未就绪，降低轮询频率 */
+            /* 传输未就绪，降低轮询频率 */
             osDelay(200);
         }
         BSP_Watchdog_Kick(BSP_WDG_DEFAULT);

@@ -12,7 +12,7 @@ typedef enum {
     BSP_WDG_DEFAULT,
     BSP_WDG_MODBUS,
     BSP_WDG_ADC,
-    BSP_WDG_DHT11,
+    BSP_WDG_CM4,
     BSP_WDG_W5500,
     BSP_WDG_TASK_COUNT
 } bsp_wdg_task_t;
@@ -37,9 +37,12 @@ void BSP_Watchdog_Start(void);
 void BSP_Watchdog_Kick(bsp_wdg_task_t task);
 
 /**
- * @brief  标记 W5500 等长时间阻塞网络操作进行中
- * @param  active  非 0 表示长操作进行中，仅监控 W5500 槽位
- * @retval 无
+ * @brief  进入/退出长时间操作（内部为引用计数）
+ * @param  active  非 0 表示进入长操作，0 表示退出
+ *
+ * OTA / W5500 / ESP8266 等长操作期间用 active!=0 进入、active==0 退出。
+ * 内部采用引用计数：多个子系统并发持有时互不覆盖，只要计数 > 0，
+ * 看门狗就仅监控 W5500 槽位、忽略其余被挂起的任务。
  */
 void BSP_Watchdog_SetLongOp(uint8_t active);
 

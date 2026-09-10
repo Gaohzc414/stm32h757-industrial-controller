@@ -10,6 +10,7 @@ typedef struct {
     uint16_t humidity;
     uint16_t temperature;
     uint16_t adc_mv;
+    uint8_t dht11_online;
 } bsp_app_live_t;
 
 static bsp_app_live_t s_live;
@@ -130,5 +131,32 @@ void BSP_AppData_SetAdcMv(uint16_t value)
 {
     bsp_app_data_lock();
     s_live.adc_mv = value;
+    bsp_app_data_unlock();
+}
+
+/**
+ * @brief  读取 DHT11 在线状态
+ * @retval 1 在线，0 离线
+ */
+uint8_t BSP_AppData_GetDht11Online(void)
+{
+    uint8_t value;
+
+    bsp_app_data_lock();
+    value = s_live.dht11_online;
+    bsp_app_data_unlock();
+
+    return value;
+}
+
+/**
+ * @brief  更新 DHT11 在线状态
+ * @param  online  非 0 在线，0 离线
+ * @retval 无
+ */
+void BSP_AppData_SetDht11Online(uint8_t online)
+{
+    bsp_app_data_lock();
+    s_live.dht11_online = online ? 1U : 0U;
     bsp_app_data_unlock();
 }

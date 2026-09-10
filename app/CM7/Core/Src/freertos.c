@@ -177,7 +177,11 @@ static void SensorIpcTask(void *argument)
 
   (void)argument;
 
+  /* 预置 CM4 心跳槽位：即使 CM4 从未发布，超时后也能被看门狗判定为死核 */
+  BSP_Watchdog_Kick(BSP_WDG_CM4);
+
   if (sensor_ipc_read(&sample) == 0) {
+    BSP_AppData_SetDht11Online(sample.valid != 0U);
     if (sample.valid != 0U) {
       BSP_AppData_SetHumidity((uint16_t)sample.humidity);
       BSP_AppData_SetTemperature((uint16_t)sample.temperature);
@@ -187,7 +191,11 @@ static void SensorIpcTask(void *argument)
   for (;;) {
     (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+    /* CM4 每次发布（成功或失败）都会通知本任务，据此喂 CM4 心跳 */
+    BSP_Watchdog_Kick(BSP_WDG_CM4);
+
     if (sensor_ipc_read(&sample) == 0) {
+      BSP_AppData_SetDht11Online(sample.valid != 0U);
       if (sample.valid != 0U) {
         BSP_AppData_SetHumidity((uint16_t)sample.humidity);
         BSP_AppData_SetTemperature((uint16_t)sample.temperature);

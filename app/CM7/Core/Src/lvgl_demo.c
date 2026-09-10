@@ -40,6 +40,7 @@ typedef struct
     lv_obj_t *bar_volt;     /**< 电压进度条 */
     lv_obj_t *switch_led;   /**< LED 开关控件 */
     lv_obj_t *led_status;   /**< LED 状态指示灯 */
+    lv_obj_t *label_dht11_status; /**< DHT11 在线/离线状态标签 */
 } dashboard_ui_t;
 
 /** LVGL 任务句柄 */
@@ -177,6 +178,12 @@ static void dashboard_build(void)
     lv_obj_set_style_text_color(title, lv_color_hex(0xEAEAEA), LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 16);
 
+    /* ---- 顶部右侧：DHT11 在线状态 ---- */
+    dashboard.label_dht11_status = lv_label_create(scr);
+    lv_label_set_text(dashboard.label_dht11_status, "DHT11: --");
+    lv_obj_set_style_text_font(dashboard.label_dht11_status, font_label, LV_PART_MAIN);
+    lv_obj_align(dashboard.label_dht11_status, LV_ALIGN_TOP_RIGHT, -20, 20);
+
     /* ---- 左侧三行卡片：温度 / 湿度 / 电压数值 ---- */
     dashboard_add_card(scr, 20, 64, "Temperature", &dashboard.label_temp);
     dashboard_add_card(scr, 20, 176, "Humidity", &dashboard.label_humi);
@@ -246,6 +253,7 @@ static void dashboard_refresh(lv_timer_t *timer)
     uint16_t humi;
     uint16_t mv;
     uint8_t led_on;
+    uint8_t dht11_online;
 
     (void)timer;
 
@@ -253,11 +261,23 @@ static void dashboard_refresh(lv_timer_t *timer)
     humi = BSP_AppData_GetHumidity();
     mv = BSP_AppData_GetAdcMv();
     led_on = BSP_Modbus_GetCoil(MODBUS_COIL_LED_PA3);
+    dht11_online = BSP_AppData_GetDht11Online();
 
     /* 左侧卡片：显示 DHT11/ADC 任务写入的共享数据 */
     lv_label_set_text_fmt(dashboard.label_temp, "%u C", (unsigned)temp_c);
     lv_label_set_text_fmt(dashboard.label_humi, "%u %%", (unsigned)humi);
     lv_label_set_text_fmt(dashboard.label_volt, "%u mV", (unsigned)mv);
+
+    /* DHT11 在线状态指示：在线绿色，离线红色 */
+    if (dht11_online != 0U) {
+        lv_label_set_text(dashboard.label_dht11_status, "DHT11: ONLINE");
+        lv_obj_set_style_text_color(dashboard.label_dht11_status,
+                                    lv_color_hex(0x00C853), LV_PART_MAIN);
+    } else {
+        lv_label_set_text(dashboard.label_dht11_status, "DHT11: OFFLINE");
+        lv_obj_set_style_text_color(dashboard.label_dht11_status,
+                                    lv_color_hex(0xFF5252), LV_PART_MAIN);
+    }
 
     if (temp_c > TEMP_ARC_MAX_C) {
         temp_c = TEMP_ARC_MAX_C;

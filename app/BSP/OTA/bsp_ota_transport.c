@@ -3,12 +3,13 @@
  * @brief   OTA 传输层实现，封装 USART6 UART 收发
  *
  * 本层将 OTA 状态机与具体传输解耦：上层只依赖本文件 API，
- * 底层当前映射到 bsp_ota_uart。
+ * 底层当前映射到 bsp_ota_uart（DMA + 环形缓冲）。
  */
 #include "bsp_ota_transport.h"
 
+#include <stddef.h>
+
 #include "bsp_ota_uart.h"
-#include "cmsis_os.h"
 
 /**
  * @brief  初始化 OTA 传输层
@@ -19,10 +20,21 @@ void bsp_ota_transport_init(void)
 }
 
 /**
+ * @brief  启动接收：绑定通知任务并武装 DMA RX
+ * @param  notify_task 被 RX 中断唤醒的任务句柄
+ * @retval 0 成功，-1 失败
+ */
+int bsp_ota_transport_start(void *notify_task)
+{
+    return bsp_ota_uart_start_rx(notify_task);
+}
+
+/**
  * @brief  轮询 UART 接收
  */
 void bsp_ota_transport_poll(void)
 {
+    /* DMA 在中断里持续把数据搬进环形缓冲，此处无需再主动轮询 USART6 */
 }
 
 /**
@@ -32,11 +44,7 @@ void bsp_ota_transport_poll(void)
  */
 int bsp_ota_transport_wait_rx(uint32_t timeout_ms)
 {
-    if (timeout_ms > 0U) {
-        osDelay(timeout_ms);
-    }
-
-    return 0;
+    return bsp_ota_uart_wait_rx(timeout_ms);
 }
 
 /**
@@ -51,7 +59,7 @@ int bsp_ota_transport_try_read(uint8_t *byte)
         return -1;
     }
 
-    return (bsp_ota_uart_read(byte, 1U, 0U) == 1) ? 0 : -1;
+    return (bsp_ota_uart_try_read(byte, 1U) == 1) ? 0 : -1;
 }
 
 /**
@@ -76,7 +84,14 @@ int bsp_ota_transport_read(uint8_t *byte, uint32_t timeout_ms)
         return -1;
     }
 
-    return (bsp_ota_uart_read(byte, 1U, timeout_ms) == 1) ? 0 : -1;
+    /* 先试环形缓冲，无数据则等通知/超时后再试一次 */
+    if (bsp_ota_uart_try_read(byte, 1U) == 1) {
+        return 0;
+    }
+
+    (void)bsp_ota_uart_wait_rx(timeout_ms);
+
+    return (bsp_ota_uart_try_read(byte, 1U) == 1) ? 0 : -1;
 }
 
 /**

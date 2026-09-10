@@ -52,6 +52,31 @@ void MX_IWDG1_Init(void)
         (unsigned long)hiwdg1.Init.Reload,
         (unsigned long)hiwdg1.Init.Window,
         (unsigned long)((128UL * hiwdg1.Init.Reload * 1000UL) / 32000UL));
+
+  /* === IWDG 排障诊断：确认 LSI 是否起振、IWDG 是否已写入（排查“停止喂狗却不复位”）=== */
+  {
+    uint32_t csr = RCC->CSR;
+    LOG_I("IWDG", "DIAG: RCC->CSR=0x%08lX  LSION=%lu  LSIRDY=%lu",
+          (unsigned long)csr,
+          (unsigned long)((csr & RCC_CSR_LSION) ? 1UL : 0UL),
+          (unsigned long)((csr & RCC_CSR_LSIRDY) ? 1UL : 0UL));
+    LOG_I("IWDG", "DIAG: IWDG SR=0x%08lX (PVU/RVU/WVU=%lu/%lu/%lu, 全 0 = 写入完成)",
+          (unsigned long)IWDG1->SR,
+          (unsigned long)((IWDG1->SR & IWDG_SR_PVU) ? 1UL : 0UL),
+          (unsigned long)((IWDG1->SR & IWDG_SR_RVU) ? 1UL : 0UL),
+          (unsigned long)((IWDG1->SR & IWDG_SR_WVU) ? 1UL : 0UL));
+    LOG_I("IWDG", "DIAG: DBGMCU->APB4FZ1=0x%08lX  DBG_IWDG1_STOP=%lu (1=调试模式冻结 IWDG)",
+          (unsigned long)DBGMCU->APB4FZ1,
+          (unsigned long)((DBGMCU->APB4FZ1 & DBGMCU_APB4FZ1_DBG_IWDG1) ? 1UL : 0UL));
+    {
+      /* Cortex-M7 DHCSR：判断核心当前是否被调试器暂停（S_HALT=1 时 DBG 冻结才真正生效）*/
+      uint32_t dhcsr = *(volatile uint32_t *)0xE000EDF0UL;
+      LOG_I("IWDG", "DIAG: DHCSR=0x%08lX  C_DEBUGEN=%lu  S_HALT=%lu (S_HALT=1=核心被调试器暂停, IWDG 被冻结)",
+            (unsigned long)dhcsr,
+            (unsigned long)(dhcsr & 1UL),
+            (unsigned long)((dhcsr >> 17U) & 1UL));
+    }
+  }
   /* USER CODE END IWDG1_Init 2 */
 
 }
