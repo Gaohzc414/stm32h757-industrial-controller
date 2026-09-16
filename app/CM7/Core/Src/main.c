@@ -45,6 +45,7 @@
 #include "lvgl_demo.h"
 #include "bsp_watchdog.h"
 #include "bsp_ota_app.h"
+#include "sensor_shared.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -121,8 +122,13 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 /* USER CODE BEGIN Boot_Mode_Sequence_2 */
-  HAL_RCCEx_EnableBootCore(RCC_BOOT_C2);
+  /* Bring up the CM4<->CM7 shared sensor block BEFORE releasing CM4.  This core
+     is parked in STOP until the HSEM #0 release below, so the reset performed
+     by sensor_ipc_boot() is provably ordered before CM4's first publish. */
   __HAL_RCC_HSEM_CLK_ENABLE();
+  sensor_ipc_boot();
+
+  HAL_RCCEx_EnableBootCore(RCC_BOOT_C2);
 
   /* Wait for CM4 to actually boot and enter STOP mode (D2 domain clock stops,
      clearing D2CKRDY) before releasing HSEM #0.  When the BCM4 option bit is 0,

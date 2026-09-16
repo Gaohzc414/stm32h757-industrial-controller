@@ -117,7 +117,7 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
   sensorIpcTaskHandle = osThreadNew(SensorIpcTask, NULL, &sensorIpcTask_attributes);
-  sensor_ipc_init(sensorIpcTaskHandle);
+  sensor_ipc_attach(sensorIpcTaskHandle);
 
   /* USER CODE BEGIN RTOS_THREADS */
   BSP_Watchdog_Start();

@@ -1,4 +1,4 @@
-/**
+/*
  * @file    bsp_ota_flash.c
  * @brief   OTA 目标槽位 Flash 擦写、校验与页脚写入实现
  */
