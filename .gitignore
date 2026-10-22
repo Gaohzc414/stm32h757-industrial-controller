@@ -24,3 +24,6 @@ compile_commands.json
 .idea/
 *.pro.user
 *.pro.user.*
+
+# Claude Code local settings
+.claude/settings.local.json
