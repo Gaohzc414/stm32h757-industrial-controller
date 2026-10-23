@@ -97,8 +97,17 @@ bool SerialManager::sendCommandAtSeq(OtaProtocol::Cmd cmd, const QByteArray &pay
         emit communicationError(tr("Write failed: %1").arg(m_port.errorString()));
         return false;
     }
-    if (!m_port.waitForBytesWritten(m_responseTimeoutMs)) {
-        emit communicationError(tr("Write timeout"));
+    /*
+     * waitForBytesWritten() 在内部写缓冲已经排空时会立即返回 false（没有待发
+     * 数据可等），这并不代表写失败。GET_INFO 这类短帧在 USB 驱动里常常瞬间
+     * 就被接受，缓冲随即为空，原先的写法会把成功的一次写误判成 "Write timeout"
+     * 并放弃本次命令，连设备的应答都不再等待。
+     * 因此只在确实还有未发出的字节时才等待；失败时把 errorString 一并报出，
+     * 便于区分真正的 ResourceError（macOS 上需要重开串口才能恢复）和超时。
+     */
+    if (m_port.bytesToWrite() > 0 &&
+        !m_port.waitForBytesWritten(m_responseTimeoutMs)) {
+        emit communicationError(tr("Write timeout: %1").arg(m_port.errorString()));
         return false;
     }
     return true;

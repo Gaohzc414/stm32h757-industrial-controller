@@ -303,8 +303,11 @@ bool NetworkManager::sendCommandAtSeq(OtaProtocol::Cmd cmd, const QByteArray &pa
     }
     const int writeWaitMs =
         (cmd == OtaProtocol::Cmd::Data) ? 3000 : m_responseTimeoutMs;
-    if (!m_client->waitForBytesWritten(writeWaitMs)) {
-        emit communicationError(tr("TCP write timeout"));
+    /* 同 SerialManager：缓冲已排空时 waitForBytesWritten() 会立即返回 false，
+     * 不能据此判定写失败，只在确实有未发数据时才等待。 */
+    if (m_client->bytesToWrite() > 0 &&
+        !m_client->waitForBytesWritten(writeWaitMs)) {
+        emit communicationError(tr("TCP write timeout: %1").arg(m_client->errorString()));
         return false;
     }
     return true;
